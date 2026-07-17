@@ -3,8 +3,8 @@ from openai import OpenAI
 
 # 1. Configuração da página e injeção de CSS
 st.set_page_config(
-    page_title="Monitoria de Solos - Prof. Danilo",
-    page_icon="🌱",
+    page_title="Monitoria de Solos - Prof. Danilo", 
+    page_icon="🌱", 
     layout="centered",
     initial_sidebar_state="expanded"
 )
@@ -19,19 +19,30 @@ st.markdown("""
     .stButton>button {
         width: 100%;
         border-radius: 8px;
+        background-color: #2e7d32; /* Tom de verde suave */
+        color: white;
+    }
+    .stButton>button:hover {
+        background-color: #1b5e20;
+        color: white;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Configuração da API Key (Fixa no código)
-# ATENÇÃO: Cuidado ao publicar este arquivo em repositórios públicos (ex: GitHub aberto)
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# 2. Configuração da API Key (Segurança Aplicada)
+# Recomenda-se criar um arquivo .streamlit/secrets.toml localmente ou 
+# configurar os "Secrets" no Streamlit Community Cloud.
+try:
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+except KeyError:
+    st.error("⚠️ Chave da API não encontrada. Configure o st.secrets.")
+    st.stop()
 
 # 3. Menu Lateral (Sidebar) para Controles
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3233/3233483.png", width=80)
     st.title("⚙️ Configurações")
-
+    
     st.markdown("### 📚 Escolha o Módulo")
     modo_escolhido = st.radio(
         "Selecione o tema para praticar:",
@@ -40,9 +51,9 @@ with st.sidebar:
             "2. Conversão de Fertilizantes"
         )
     )
-
+    
     st.divider()
-
+    
     # Botão para limpar a memória do chat
     if st.button("🧹 Recomeçar Treino"):
         st.session_state.messages = []
@@ -52,19 +63,9 @@ with st.sidebar:
 st.title("🌱 Monitoria IA: Fertilidade do Solo")
 st.markdown("**Professor responsável:** Danilo")
 
-st.info(
-    "Bem-vindos! Este é o nosso ambiente interativo de estudos. Use o menu lateral para escolher o módulo e treinar o que vimos em sala de aula.",
-    icon="💡")
+st.info("Bem-vindos! Este é o nosso ambiente interativo de estudos. Use o menu lateral para escolher o módulo e treinar o que vimos em sala de aula.", icon="💡")
 
-# 5. Lógica de troca de modo e limpeza de memória
-if "modo_atual" not in st.session_state:
-    st.session_state.modo_atual = modo_escolhido
-
-if st.session_state.modo_atual != modo_escolhido:
-    st.session_state.messages = []  # Reseta o chat ao trocar de módulo
-    st.session_state.modo_atual = modo_escolhido
-
-# 6. Definição Dinâmica dos System Prompts
+# 5. Definição Dinâmica dos System Prompts e Mensagens de Boas-Vindas
 if modo_escolhido == "1. Reconhecimento de Símbolos":
     system_prompt = """
     Você é o monitor virtual da disciplina de Fertilidade do Solo, criado pelo Professor Danilo.
@@ -100,7 +101,7 @@ if modo_escolhido == "1. Reconhecimento de Símbolos":
     - Use APENAS $ para símbolos na mesma linha (ex: $Prem$).
     - É ESTRITAMENTE PROIBIDO usar colchetes como [ ou ] ou \[ ou \] para formatar matemática. Use EXCLUSIVAMENTE cifrões.
     """
-    mensagem_boas_vindas = "Olá! Sou o monitor virtual do Prof. Danilo. 🔤 Para você gabaritar a questão extra, precisa saber ler o quadro de fórmulas de trás para frente. Posso sortear o primeiro símbolo para testar sua memória?"
+    mensagem_boas_vindas = "Olá! Sou o monitor virtual do Prof. Danilo. 🔤 Para você dominar os cálculos da prova, precisa saber ler o quadro de fórmulas de trás para frente. Posso sortear o primeiro símbolo para testar sua memória?"
 
 elif modo_escolhido == "2. Conversão de Fertilizantes":
     system_prompt = """
@@ -121,23 +122,25 @@ elif modo_escolhido == "2. Conversão de Fertilizantes":
     """
     mensagem_boas_vindas = "Olá! Sou o monitor virtual do Prof. Danilo. 🚜 Aqui vamos transformar a recomendação de nutrientes em sacos de adubo usando a regra de três. Pronto para o seu primeiro cenário prático?"
 
-# 7. Inicializar o histórico de mensagens
-if "messages" not in st.session_state or not st.session_state.messages:
+# 6. Lógica de troca de modo e inicialização de memória
+if "modo_atual" not in st.session_state or st.session_state.modo_atual != modo_escolhido:
+    st.session_state.modo_atual = modo_escolhido
+    # Reseta as mensagens sempre que o modo muda
     st.session_state.messages = [
         {"role": "system", "content": system_prompt},
         {"role": "assistant", "content": mensagem_boas_vindas}
     ]
 
-# 8. Renderizar Histórico na Tela
+# 7. Renderizar Histórico na Tela (ignora o system prompt)
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         avatar_icon = "🧑‍🎓" if msg["role"] == "user" else "🤖"
         with st.chat_message(msg["role"], avatar=avatar_icon):
             st.markdown(msg["content"])
 
-# 9. Capturar Input e Consultar a IA
+# 8. Capturar Input e Consultar a IA
 if user_input := st.chat_input("Digite sua resposta aqui..."):
-
+    
     with st.chat_message("user", avatar="🧑‍🎓"):
         st.markdown(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -154,4 +157,4 @@ if user_input := st.chat_input("Digite sua resposta aqui..."):
                 st.markdown(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
             except Exception as e:
-                st.error(f"Erro ao conectar com a IA: verifique sua chave API ou conexão. Detalhes: {e}")
+                st.error(f"Erro ao conectar com a IA. Detalhes: {e}")
