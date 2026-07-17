@@ -66,7 +66,7 @@ with st.sidebar:
     
     # Botão para o PDF do Estudo Dirigido
     if os.path.exists("Estudo_Dirigido_a_Prova_Final.pdf"):
-        with open("Estudar_Para_a_Prova_Final.pdf", "rb") as file_pdf:
+        with open("Estudo_Dirigido_a_Prova_Final", "rb") as file_pdf:
             st.download_button(
                 label="📥 Baixar Estudo Dirigido (PDF)",
                 data=file_pdf,
