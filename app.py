@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+import os
 
 # 1. Configuração da página e injeção de CSS
 st.set_page_config(
@@ -19,7 +20,7 @@ st.markdown("""
     .stButton>button {
         width: 100%;
         border-radius: 8px;
-        background-color: #2e7d32; /* Tom de verde suave */
+        background-color: #2e7d32;
         color: white;
     }
     .stButton>button:hover {
@@ -30,8 +31,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. Configuração da API Key (Segurança Aplicada)
-# Recomenda-se criar um arquivo .streamlit/secrets.toml localmente ou 
-# configurar os "Secrets" no Streamlit Community Cloud.
 try:
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 except KeyError:
@@ -54,6 +53,43 @@ with st.sidebar:
     
     st.divider()
     
+    # NOVAS CONFIGURAÇÕES: Dicas de Uso
+    with st.expander("ℹ️ Como usar o monitor?"):
+        st.write("- **Seja direto:** Não se preocupe com formatação, a IA entende o contexto das suas respostas.")
+        st.write("- **Peça dicas:** Se travar na montagem da regra de três, peça para o monitor mostrar apenas o primeiro passo para você tentar terminar.")
+        st.write("- **Erre sem medo:** Aqui é o lugar para testar! A IA vai corrigir e explicar o raciocínio sem julgar.")
+
+    st.divider()
+
+    # NOVAS CONFIGURAÇÕES: Arquivos de Apoio
+    st.markdown("### 📂 Arquivos de Apoio")
+    
+    # Botão para o PDF do Estudo Dirigido
+    if os.path.exists("Estudo_Dirigido_a_Prova_Final.pdf"):
+        with open("Estudar_Para_a_Prova_Final.pdf", "rb") as file_pdf:
+            st.download_button(
+                label="📥 Baixar Estudo Dirigido (PDF)",
+                data=file_pdf,
+                file_name="Estudo_Dirigido_a_Prova_Final.pdf",
+                mime="application/pdf"
+            )
+    else:
+        st.warning("⚠️ Estudo dirigido não encontrado na pasta.")
+
+    # Botão para o DOCX do Checklist
+    if os.path.exists("Checklist_Autoavaliacao_Prova_final.pdf"):
+        with open("Checklist_Autoavaliacao_Atualizado.docx", "rb") as file_docx:
+            st.download_button(
+                label="📥 Baixar Check-list",
+                data=file_pdf,
+                file_name="Checklist_Autoavaliacao_Prova_final.pdf",
+                mime="application/pdf"
+            )
+    else:
+        st.warning("⚠️ Check-list não encontrado na pasta.")
+
+    st.divider()
+    
     # Botão para limpar a memória do chat
     if st.button("🧹 Recomeçar Treino"):
         st.session_state.messages = []
@@ -63,7 +99,7 @@ with st.sidebar:
 st.title("🌱 Monitoria IA: Fertilidade do Solo")
 st.markdown("**Professor responsável:** Danilo")
 
-st.info("Bem-vindos! Este é o nosso ambiente interativo de estudos. Use o menu lateral para escolher o módulo e treinar o que vimos em sala de aula.", icon="💡")
+st.info("Bem-vindos! Este é o nosso ambiente interativo de estudos. Use o menu lateral para baixar os arquivos, escolher o módulo e treinar o que vimos em sala de aula.", icon="💡")
 
 # 5. Definição Dinâmica dos System Prompts e Mensagens de Boas-Vindas
 if modo_escolhido == "1. Reconhecimento de Símbolos":
